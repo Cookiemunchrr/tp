@@ -1,0 +1,35 @@
+name: Smoke-test the v1.6 JAR
+
+on: push
+
+jobs:
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, windows-latest, macos-latest, macos-15-intel]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '25'
+          java-package: jdk
+      - name: Launch the released JAR for 30 seconds
+        shell: bash
+        run: |
+          mkdir run && cd run
+          curl -sSfL -o astra.jar https://github.com/AY2627S1-CS2103-F13-2/tp/releases/download/v1.6/contactfile.jar
+          java -version
+          if [ "$RUNNER_OS" = Linux ]; then
+            xvfb-run -a java -jar astra.jar > out.log 2>&1 &
+          else
+            java -jar astra.jar > out.log 2>&1 &
+          fi
+          PID=$!
+          sleep 30
+          cat out.log
+          grep -q 'Starting UI' out.log
+          if grep -qiE 'exception|fatal|severe' out.log; then exit 1; fi
+          kill -0 $PID
+          echo "Astra is still running after 30 seconds"
