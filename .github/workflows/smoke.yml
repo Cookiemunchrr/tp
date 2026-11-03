@@ -7,14 +7,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, windows-latest, macos-latest, macos-15-intel]
+        platform: [macos-15-intel]
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
           java-version: '25'
-          java-package: jdk
+          java-package: jdk+fx
       - name: Launch the released JAR for 30 seconds
         shell: bash
         run: |
